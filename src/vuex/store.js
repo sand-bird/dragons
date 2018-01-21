@@ -73,16 +73,14 @@ export default new Vuex.Store({
       for (let i = 0; i < ids.length; i++) {
         state.dragons[ids[i]] = null
         removeFrom(state.dragonIds, ids[i])
-        addTo(state.emptyOffsets[state.active], ids[i])
       }
     },
     
-    // accepts an array of {offset, charm} objects or a single one
-    ADD_DRAGONS (state, charms) {
-      if (!Array.isArray(charms)) charms = [charms]
-      for (let i = 0; i < charms.length; i++) {
-        let offset = state.emptyOffsets[state.active].pop()
-        state.charms[offset] = charms[i]
+    // accepts an array of {id, dragon} objects or a single one
+    ADD_DRAGONS (state, dragons) {
+      if (!Array.isArray(dragons)) dragons = [dragons]
+      for (let i = 0; i < dragons.length; i++) {
+        state.dragons[id] = dragons[i]
         addTo(state.charmOffsets[state.active], offset)
       }
     },

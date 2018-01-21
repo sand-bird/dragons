@@ -159,7 +159,7 @@ export default {
       settings: {
         skillSort: 1,
         skillMax: 1,
-        decoWarn: 1,
+        deleteWarn: 1,
         decoClear: 1,
         decoImport: 0,
         decoCopy: 0,
@@ -256,7 +256,7 @@ export default {
       }).then((res) => {this.loading = false})
         
       // initialize settings to user's localStorage
-      let settings = ['skillSort', 'skillMax', 'decoWarn', 'decoClear']
+      let settings = ['skillSort', 'skillMax', 'deleteWarn', 'decoClear']
       settings.forEach( key => {
         if (localStorage.hasOwnProperty(key))
           this.settings[key] = parseInt(localStorage.getItem(key))
@@ -319,13 +319,11 @@ export default {
       }
     },
     
-    removedragon (offset) {
-      debug("[methods] removedragon: " + offset)
-      // make ABSOLUTELY SURE that equip set dragons can't be deleted
-      if (this.equipSets[offset]) return
-      // if we need a decoration warning, open the modal
-      // and only delete if the modal emits a 'confirm' event
-      if (this.settings.decoWarn &&
+    removeDragon (id) {
+      debug("[methods] removeDragon: " + id)
+      // TODO: make breeding dragons unremovable?
+
+      if (this.settings.deleteWarn &&
           this.$store.state.dragons[offset].filledSlots) {
         this.openModal('delete')
         this.modal.once('confirm', () => {
@@ -334,44 +332,25 @@ export default {
       }
       else this.$store.dispatch('remove', offset)
     },
-    
-    setActivedragon (offset) {
-      debug("[methods] setActivedragon: " + offset)
-      if (this.activedragon && this.activedragon == offset) 
-        this.activedragon = null
-      else this.activedragon = offset
+
+    // TODO: removeHabitat
+    removeDragon (id) {
+      debug("[methods] removeHabitat: " + id)
     },
     
-    // new dragons will be placed at the last available place
-    // in the equipment box, then in slots created by deleting
-    // dragons as a last resort
-    newdragon () {
-      debug("[methods] newdragon: " + this.activedragon)
-      let newdragon = {}
-      let sourcedragon = this.$store.state.dragons[this.activedragon] || null
-      if (this.activedragon && sourcedragon) newdragon = {
-        rarity: sourcedragon.rarity,
-        slots: sourcedragon.slots,
-        type: sourcedragon.type,
-        // why does js default to passing arrays by reference this is dumb
-        skills: sourcedragon.skills.slice(),
-        skillValues: sourcedragon.skillValues.slice()
-      }
+    // TODO: open a modal that lets the user put in the dragon's info
+    newDragon () {
+      debug("[methods] newDragon")
+      let newDragon = {}
       else newdragon = {
-        rarity: 7,
-        slots: 3,
-        type: 327,
-        skills: [36, 18],
-        skillValues: [5, 10]
+        // properties go here
       }
-      if (this.settings.decoCopy) newdragon.decorations = sourcedragon.decorations
-      processDecorations(newdragon)
-      
-      this.$store.dispatch('add', newdragon)
+      // TODO: calculate dcph from dragon table
+      this.$store.dispatch('add', newDragon)
     },
     
-    importdragons () {
-      debug("[methods] importdragons")
+    importData () {
+      debug("[methods] importData")
       this.openModal('import', {
         emptyCount: this.emptyOffsets ? this.emptyOffsets.length : 0,
         deco: this.settings.decoImport
@@ -389,15 +368,10 @@ export default {
       })
     },
     
-    // all: when set, cleardragons does not track dragons with
-    // decorations, and deletes indiscriminately instead
-    cleardragons () {
-      debug("[methods] cleardragons: " + this.settings.decoClear)
-      return new Promise((resolve, reject) => {
-        let emptydragons = []
-        let filleddragons = []
-        
-        this.dragons.forEach((offset) => {
+    clearDragons () {
+      debug("[methods] clearDragons")
+      return new Promise((resolve, reject) => {        
+        this.dragons.forEach((id) => {
           if (this.settings.decoClear < 2 &&
               this.$store.state.dragons[offset].filledSlots)
             filleddragons.push(offset)
@@ -416,8 +390,8 @@ export default {
         else if (filleddragons.length) {
           // decoClear is Smart: clear filled dragons
           if (this.settings.decoClear) {
-            // decoWarn is On: we need a modal
-            if (this.settings.decoWarn) {
+            // deleteWarn is On: we need a modal
+            if (this.settings.deleteWarn) {
               this.openModal('delete')
               
               this.modal.once('confirm', () => {
@@ -425,7 +399,7 @@ export default {
                 resolve()
               })
             }
-            // decoWarn is Off: just clear it
+            // deleteWarn is Off: just clear it
             else {
               this.$store.dispatch('remove', filleddragons)
               resolve()

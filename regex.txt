@@ -1,0 +1,21 @@
+replace whitespaces w commas:
+\S\K(\t* +\t*)
+\S\K(\h.)
+------------
+[\w#]\K(\h+)
+------------
+
+in-number commas:
+--------------
+(?<=\d),(?=\d)
+--------------
+
+in-number commas and trailing commas:
+(?<=\S),(?=\d|\s*\p{Pe})
+(?<=\S),(?=\d| *[\]\}])
+
+
+trailing commas and spaces:
+-----------------------
+(?<=\S),* (?=\s*[\]\}])
+-----------------------
